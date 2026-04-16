@@ -1,2 +1,4 @@
 .env
+clash-whitelist.yaml
+geosite-cheburnet.yaml
 node_modules
