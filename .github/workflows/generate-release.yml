@@ -1,0 +1,43 @@
+name: Generate YAMLs hourly
+
+on:
+  schedule:
+    - cron: '5 * * * *'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Run node script
+        run: node script.js
+
+      - name: Generate release tag
+        id: generate_tag
+        run: echo "TAG_NAME=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
+
+      - name: Upload YAMLs to a new release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.generate_tag.outputs.TAG_NAME }}
+          name: ${{ steps.generate_tag.outputs.TAG_NAME }}
+          files: |
+            clash-whitelist.yaml
+            geosite-cheburnet.yaml
