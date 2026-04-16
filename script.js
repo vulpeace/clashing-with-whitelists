@@ -3,7 +3,8 @@ import yaml from 'yaml';
 import { readFile, writeFile } from 'fs/promises';
 
 async function getGeoYaml() {
-    const url = new URL(process.env.JSON_GEOSITE_URL) || 'https://github.com/jinndi/geosite-cheburnet/releases/latest/download/geosite-cheburnet.json';
+    const url = process.env.JSON_GEOSITE_URL ? new URL(process.env.JSON_GEOSITE_URL)
+        : 'https://github.com/jinndi/geosite-cheburnet/releases/latest/download/geosite-cheburnet.json';
     const res = await fetch(url);
     if (!res.ok) {
         throw new Error(`Failed to fetch geosite: ${res.statusText}`);
@@ -19,7 +20,8 @@ async function getGeoYaml() {
 }
 
 async function getWlArray() {
-    const serverPattern = new RegExp(process.env.SERVER_PATTERN || "%F0%9F%87%B7%F0%9F%87%BA");;
+    const serverPattern = process.env.SERVER_PATTERN ? new RegExp(process.env.SERVER_PATTERN)
+        : new RegExp("%F0%9F%87%B7%F0%9F%87%BA");
     const url = 'https://raw.githubusercontent.com/zieng2/wl/refs/heads/main/vless_lite.txt';
     const res = await fetch(url);
     if (!res.ok) {
@@ -147,7 +149,12 @@ async function main() {
 
     if (geoResult.status === 'fulfilled') {
         const geosite = geoResult.value;
-        await writeFile('geosite-cheburnet.yaml', geosite);
+        try {
+            await writeFile('geosite-cheburnet.yaml', geosite);
+            console.log('Written geosite-cheburnet.yaml');
+        } catch(e) {
+            console.log(e.message);
+        }
     } else {
         console.error(geoResult.reason.message);
     }
@@ -155,9 +162,14 @@ async function main() {
     if (wlResult.status === 'fulfilled') {
         const uriArray = wlResult.value;
         const parsedUriArray = getParsedUriArray(uriArray);
-        const clashConfig = compileClashConfig(parsedUriArray,
-            clashTemplate);
-        await writeFile('clash-whitelist.yaml', clashConfig);
+        try {
+            const clashConfig = compileClashConfig(parsedUriArray,
+                clashTemplate);
+            await writeFile('clash-whitelist.yaml', clashConfig);
+            console.log('Written clash-whitelist.yaml');
+        } catch(e) {
+            console.error(e.message);
+        }
     } else {
         console.error(wlResult.reason.message);
     }
