@@ -1,0 +1,24 @@
+{
+  "name": "clashing-with-whitelists",
+  "version": "1.0.0",
+  "description": "Make circumventing whitelists easier with Clash Meta",
+  "homepage": "https://github.com/vulpeace/clashing-with-whitelists#readme",
+  "bugs": {
+    "url": "https://github.com/vulpeace/clashing-with-whitelists/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vulpeace/clashing-with-whitelists.git"
+  },
+  "license": "MIT",
+  "author": "vulpeace",
+  "type": "module",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "yaml": "^2.8.3"
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "mode": "rule",
+  "log-level": "warning",
+  "ipv6": false,
+  "profile": {
+    "store-selected": true
+  },
+  "sniffer": {
+    "enable": true,
+    "sniff": {
+      "HTTP": {
+        "ports": [
+          80
+        ]
+      },
+      "TLS": {
+        "ports": [
+          443
+        ]
+      },
+      "QUIC": {
+        "ports": [
+          443
+        ]
+      }
+    },
+    "skip-domain": [
+      "+.lan"
+    ]
+  },
+  "tun": {
+    "enable": true,
+    "stack": "mixed",
+    "auto-route": true,
+    "auto-detect-interface": true,
+    "strict-route": true,
+    "dns-hijack": [
+      "any:53"
+    ],
+    "mtu": 9000
+  },
+  "dns": {
+    "enable": true,
+    "listen": "0.0.0.0:1183",
+    "ipv6": false,
+    "default-nameserver": [
+      "system"
+    ],
+    "nameserver": [
+      "system"
+    ],
+    "nameserver-policy": {
+      "+.lan": "system"
+    }
+  },
+  "proxies": [],
+  "proxy-groups": [
+    {
+      "name": "PROXY",
+      "type": "select",
+      "proxies": [],
+      "url": "http://cp.cloudflare.com/generate_204",
+      "interval": 300
+    }
+  ],
+  "rule-providers": {
+    "geosite-private": {
+      "type": "http",
+      "behavior": "domain",
+      "format": "mrs",
+      "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/meta/geo/geosite/private.mrs",
+      "interval": 86400
+    },
+    "geoip-private": {
+      "type": "http",
+      "behavior": "ipcidr",
+      "format": "mrs",
+      "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/meta/geo/geoip/private.mrs",
+      "interval": 86400
+    },
+    "geosite-cheburnet": {
+      "type": "http",
+      "behavior": "domain",
+      "format": "yaml",
+      "url": null,
+      "interval": 86400
+    }
+  },
+  "rules": [
+    "RULE-SET,geosite-private,DIRECT",
+    "RULE-SET,geoip-private,DIRECT",
+    "RULE-SET,geosite-cheburnet,DIRECT",
+    "MATCH,PROXY"
+  ]
+}
