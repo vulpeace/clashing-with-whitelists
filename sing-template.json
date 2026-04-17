@@ -1,0 +1,86 @@
+{
+    "log": {
+        "level": "warn",
+        "timestamp": true
+    },
+    "dns": {
+        "servers": [
+            {
+                "type": "https",
+                "tag": "cf",
+                "domain_resolver": "resolver",
+                "server": "1.1.1.1",
+                "detour": "proxy"
+            },
+            {
+                "type": "local",
+                "tag": "resolver"
+            }
+        ],
+        "strategy": "ipv4_only"
+    },
+    "inbounds": [
+        {
+            "type": "tun",
+            "mtu": 9000,
+            "address": "172.19.0.1/30",
+            "auto_route": true,
+            "strict_route": true,
+            "stack": "mixed"
+        }
+    ],
+    "outbounds": [
+        {
+            "type": "selector",
+            "tag": "proxy",
+            "outbounds": []
+        },
+        {
+            "type": "direct",
+            "tag": "direct",
+            "domain_resolver": "resolver"
+        }
+    ],
+    "route": {
+        "rules": [
+            {
+                "action": "sniff"
+            },
+            {
+                "protocol": "dns",
+                "action": "hijack-dns"
+            },
+            {
+                "ip_is_private": true,
+                "outbound": "direct"
+            },
+            {
+                "rule_set": [
+                    "geosite-cheburnet",
+                    "geosite-private"
+                ],
+                "outbound": "direct"
+            }
+        ],
+        "rule_set": [
+            {
+                "type": "remote",
+                "tag": "geosite-private",
+                "url": "https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-private.srs",
+                "download_detour": "proxy"
+            },
+            {
+                "type": "remote",
+                "tag": "geosite-cheburnet",
+                "url": null,
+                "download_detour": "proxy"
+            }
+        ],
+        "auto_detect_interface": true
+    },
+    "experimental": {
+        "cache_file": {
+            "enabled": true
+        }
+    }
+}

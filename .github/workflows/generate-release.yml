@@ -1,4 +1,4 @@
-name: Generate YAMLs hourly
+name: Run script hourly
 
 on:
   schedule:
@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v6
 
       - name: Setup Node.js
@@ -33,13 +33,14 @@ jobs:
         id: generate_tag
         run: echo "TAG_NAME=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
 
-      - name: Upload YAMLs to a new release
+      - name: Upload artifacts to a new release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.generate_tag.outputs.TAG_NAME }}
           name: ${{ steps.generate_tag.outputs.TAG_NAME }}
           files: |
             clash-whitelist.yaml
+            sing-whitelist.json
             geosite-cheburnet.yaml
 
       - name: Delete old releases

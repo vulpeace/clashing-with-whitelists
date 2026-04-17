@@ -47,7 +47,7 @@
       "system"
     ],
     "nameserver": [
-      "system"
+      "https://1.1.1.1/dns-query#PROXY"
     ],
     "nameserver-policy": {
       "+.lan": "system"
@@ -69,21 +69,24 @@
       "behavior": "domain",
       "format": "mrs",
       "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/meta/geo/geosite/private.mrs",
-      "interval": 86400
+      "interval": 86400,
+      "proxy": "PROXY"
     },
     "geoip-private": {
       "type": "http",
       "behavior": "ipcidr",
       "format": "mrs",
       "url": "https://github.com/MetaCubeX/meta-rules-dat/raw/meta/geo/geoip/private.mrs",
-      "interval": 86400
+      "interval": 86400,
+      "proxy": "PROXY"
     },
     "geosite-cheburnet": {
       "type": "http",
       "behavior": "domain",
       "format": "yaml",
       "url": null,
-      "interval": 86400
+      "interval": 86400,
+      "proxy": "PROXY"
     }
   },
   "rules": [

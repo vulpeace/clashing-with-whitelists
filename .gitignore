@@ -1,4 +1,5 @@
 .env
 clash-whitelist.yaml
+sing-whitelist.json
 geosite-cheburnet.yaml
 node_modules

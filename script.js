@@ -80,8 +80,8 @@ function getParsedUriArray(wlArray) {
     return parsedUriArray;
 }
 
-function compileClashConfig(parsedUriArray, templateClash) {
-    let clashConfig = structuredClone(templateClash);
+function compileClashConfig(parsedUriArray, clashTemplate) {
+    let clashConfig = structuredClone(clashTemplate);
 
     parsedUriArray.forEach(parsedUri => {
         let outbound = {
@@ -89,9 +89,9 @@ function compileClashConfig(parsedUriArray, templateClash) {
             type: 'vless',
             uuid: parsedUri.uuid[1],
             server: parsedUri.server[1],
-            port: parsedUri.port[1],
+            port: parseInt(parsedUri.port[1]),
             encryption: 'none',
-            'tls': true,
+            tls: true,
             servername: parsedUri.servername[1],
             'client-fingerprint': parsedUri.fp && parsedUri.fp[1] !== 'randomized'
                 ? parsedUri.fp[1] : 'random',
@@ -106,8 +106,8 @@ function compileClashConfig(parsedUriArray, templateClash) {
 
         if (parsedUri.security[1] === 'reality') {
             outbound['reality-opts'] = {
-                'public-key': parsedUri.reality.publicKey[1],
-                'short-id': parsedUri.reality.shortId ? parsedUri.reality.shortId[1] : ''
+                'public-key': parsedUri.reality.publicKey?.[1],
+                'short-id': parsedUri.reality.shortId?.[1]
             };
         }
 
@@ -120,8 +120,8 @@ function compileClashConfig(parsedUriArray, templateClash) {
 
         if (parsedUri.type[1] === 'xhttp') {
             outbound['xhttp-opts'] = {
-                path: parsedUri.xhttp.path ? parsedUri.xhttp.path[1] : '',
-                mode: parsedUri.xhttp.mode ? parsedUri.xhttp.mode[1] : ''
+                path: parsedUri.xhttp.path?.[1],
+                mode: parsedUri.xhttp.mode?.[1]
             }
         }
 
@@ -146,13 +146,78 @@ function compileClashConfig(parsedUriArray, templateClash) {
     return yaml.stringify(clashConfigYaml, 2);
 }
 
+function compileSingConfig(parsedUriArray, singTemplate) {
+    let singConfig = structuredClone(singTemplate);
+
+    parsedUriArray.forEach(parsedUri => {
+        let outbound = {
+            tag: decodeURIComponent(parsedUri.name[1]),
+            type: 'vless',
+            uuid: parsedUri.uuid[1],
+            server: parsedUri.server[1],
+            server_port: parseInt(parsedUri.port[1]),
+            tls: {
+                enabled: true,
+                server_name: parsedUri.servername[1],
+                alpn: parsedUri.alpn ? decodeURIComponent(parsedUri.alpn[1]).split(',')
+                    : ['h2', 'http/1.1'],
+                utls: {
+                    enabled: true,
+                    fingerprint: parsedUri.fp ? parsedUri.fp[1] : 'random',
+                },
+                reality: {
+                    enabled: parsedUri.security[1] === 'reality',
+                    public_key: parsedUri.reality.publicKey?.[1],
+                    short_id: parsedUri.reality.shortId?.[1]
+                }
+            },
+            flow: parsedUri.flow ? 'xtls-rprx-vision' : '',
+            domain_resolver: "cf"
+        }
+
+        if (parsedUri.type[1] === 'grpc') {
+            outbound.transport = {
+                type: "grpc",
+                service_name: parsedUri.grpc.serviceName
+                    ? parsedUri.grpc.serviceName[1] : "GunService"
+            }
+        }
+
+        singConfig.outbounds.push(outbound);
+        singConfig.outbounds[0].outbounds.push(outbound.tag);
+    });
+
+    const singGeositeUrl = process.env.SING_GEOSITE_URL;
+    let geositeUrl = '';
+    if (URL.canParse(singGeositeUrl)) {
+        geositeUrl =  new URL(singGeositeUrl);
+    } else {
+        geositeUrl = 'https://github.com/jinndi/geosite-cheburnet/releases/latest/download/geosite-cheburnet.srs';
+    }
+
+    singConfig.route.rule_set[1].url = geositeUrl;
+
+    return JSON.stringify(singConfig, undefined, 2);
+}
+
 async function main() {
-    let clashTemplate = null;
+    let clashTemplate, singTemplate = null;
+    let isClashSkipped = false;
     try {
         clashTemplate = JSON.parse(await readFile('clash-template.json', 'utf8'));
     } catch(e) {
-        console.error(e.message);
-        process.exit(1);
+        console.error(e.message, '\nSkipping Clash template');
+        isClashSkipped = true;
+    }
+
+    try {
+        singTemplate = JSON.parse(await readFile('sing-template.json', 'utf8'));
+    } catch(e) {
+        console.error(e.message, '\nSkipping sing-box template');
+        if (isClashSkipped) {
+            console.error('No valid templates found');
+            process.exit(1);
+        }
     }
 
     const results = await Promise.allSettled([getGeoYaml(), getWlArray()]);
@@ -174,8 +239,12 @@ async function main() {
         const uriArray = wlResult.value;
         const parsedUriArray = getParsedUriArray(uriArray);
         try {
-            const clashConfig = compileClashConfig(parsedUriArray, clashTemplate);
-            await writeFile('clash-whitelist.yaml', clashConfig);
+            const clashConfig = clashTemplate
+                ? compileClashConfig(parsedUriArray, clashTemplate) : null;
+            if (clashConfig) await writeFile('clash-whitelist.yaml', clashConfig);
+            const singConfig = singTemplate
+                ? compileSingConfig(parsedUriArray, singTemplate) : null;
+            if (singConfig) await writeFile('sing-whitelist.json', singConfig);
         } catch(e) {
             console.error(e.message);
         }
