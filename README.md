@@ -1,4 +1,6 @@
 # Clashing with whitelists
+##### Если вам просто нужен способ обхода белых списков – гайд находится в [vulpeace/roscomcircum](https://github.com/vulpeace/roscomcircum)
+</br>
 
 Скрипт на node для Github Actions, конвертирующий набор URI для vless в конфиг-файл для Mihomo (Clash).
 По умолчанию список берется из репозитория [zieng2/wl](https://github.com/zieng2/wl), но вы можете предоставить другой, указав URL в переменной VLESS_URI_LIST_URL (не забудьте переименовать .env.example в .env).
