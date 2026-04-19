@@ -1,8 +1,9 @@
 name: Run script hourly
 
 on:
-  schedule:
-    - cron: '5 * * * *'
+  push:
+    tags:
+      - '*'
 
   workflow_dispatch:
 
@@ -29,15 +30,11 @@ jobs:
       - name: Run node script
         run: node script.ts
 
-      - name: Generate release tag
-        id: generate_tag
-        run: echo "TAG_NAME=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
-
       - name: Upload artifacts to a new release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ steps.generate_tag.outputs.TAG_NAME }}
-          name: ${{ steps.generate_tag.outputs.TAG_NAME }}
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
           files: |
             clash-whitelist.yaml
             sing-whitelist.json
