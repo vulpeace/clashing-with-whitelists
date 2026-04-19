@@ -126,17 +126,17 @@ function compileClashConfig(parsedUriArray: ParsedUri[], clashTemplate: any) {
             {
                 'public-key': parsedUri.reality.publicKey,
                 'short-id': parsedUri.reality.shortId
-            } : {},
+            } : undefined,
             'grpc-opts': parsedUri.type === 'grpc' ?
             {
                 'grpc-service-name': parsedUri.grpc.serviceName ?
                     parsedUri.grpc.serviceName : 'GunService'
-            } : {},
+            } : undefined,
             'xhttp-opts': parsedUri.type === 'xhttp' ?
             {
                 path: parsedUri.xhttp.path,
                 mode: parsedUri.xhttp.mode
-            } : {}
+            } : undefined
         }
 
         clashConfig.proxies.push(outbound);
@@ -183,7 +183,7 @@ function compileSingConfig(parsedUriArray: ParsedUri[], singTemplate: any) {
                     enabled: true,
                     public_key: parsedUri.reality.publicKey,
                     short_id: parsedUri.reality.shortId
-                } : {}
+                } : undefined
             },
             flow: parsedUri.flow,
             transport: parsedUri.type === 'grpc' ?
@@ -191,7 +191,7 @@ function compileSingConfig(parsedUriArray: ParsedUri[], singTemplate: any) {
                 type: "grpc",
                 service_name: parsedUri.grpc.serviceName ?
                     parsedUri.grpc.serviceName : "GunService"
-            } : {},
+            } : undefined
         }
 
         singConfig.outbounds.push(outbound);
