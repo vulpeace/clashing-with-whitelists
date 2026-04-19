@@ -113,10 +113,10 @@ function compileClashConfig(parsedUriArray: ParsedUri[], clashTemplate: any) {
             encryption: 'none',
             tls: true,
             servername: parsedUri.servername,
-            'client-fingerprint': parsedUri.fp && parsedUri.fp !== 'randomized'
-                ? parsedUri.fp : 'random',
+            'client-fingerprint': parsedUri.fp && parsedUri.fp !== 'randomized' ?
+                parsedUri.fp : 'random',
             'skip-cert-verify': false,
-            flow: parsedUri?.flow,
+            flow: parsedUri.flow,
             alpn: parsedUri.alpn ? decodeURIComponent(parsedUri.alpn).split(',')
                 : ['h2', 'http/1.1'],
             udp: true,
@@ -124,18 +124,18 @@ function compileClashConfig(parsedUriArray: ParsedUri[], clashTemplate: any) {
             network: parsedUri.type,
             'reality-opts': parsedUri.security === 'reality' ?
             {
-                'public-key': parsedUri.reality.publicKey?.[1],
-                'short-id': parsedUri.reality.shortId?.[1]
+                'public-key': parsedUri.reality.publicKey,
+                'short-id': parsedUri.reality.shortId
             } : {},
             'grpc-opts': parsedUri.type === 'grpc' ?
             {
-                'grpc-service-name': parsedUri.grpc.serviceName
-                    ? parsedUri.grpc.serviceName[1] : 'GunService'
+                'grpc-service-name': parsedUri.grpc.serviceName ?
+                    parsedUri.grpc.serviceName : 'GunService'
             } : {},
             'xhttp-opts': parsedUri.type === 'xhttp' ?
             {
-                path: parsedUri.xhttp.path?.[1],
-                mode: parsedUri.xhttp.mode?.[1]
+                path: parsedUri.xhttp.path,
+                mode: parsedUri.xhttp.mode
             } : {}
         }
 
@@ -179,18 +179,18 @@ function compileSingConfig(parsedUriArray: ParsedUri[], singTemplate: any) {
                     enabled: true,
                     fingerprint: parsedUri.fp ? parsedUri.fp : 'random',
                 },
-                reality: {
-                    enabled: parsedUri.security === 'reality',
-                    public_key: parsedUri.reality?.publicKey,
-                    short_id: parsedUri.reality?.shortId
-                }
+                reality: parsedUri.security === 'reality' ? {
+                    enabled: true,
+                    public_key: parsedUri.reality.publicKey,
+                    short_id: parsedUri.reality.shortId
+                } : {}
             },
-            flow: parsedUri?.flow,
+            flow: parsedUri.flow,
             transport: parsedUri.type === 'grpc' ?
             {
                 type: "grpc",
-                service_name: parsedUri.grpc.serviceName
-                    ? parsedUri.grpc.serviceName[1] : "GunService"
+                service_name: parsedUri.grpc.serviceName ?
+                    parsedUri.grpc.serviceName : "GunService"
             } : {},
         }
 
@@ -251,11 +251,11 @@ async function main() {
         const uriArray = wlResult.value;
         const parsedUriArray = getParsedUriArray(uriArray);
         try {
-            const clashConfig = clashTemplate
-                ? compileClashConfig(parsedUriArray, clashTemplate) : null;
+            const clashConfig = clashTemplate ?
+                compileClashConfig(parsedUriArray, clashTemplate) : null;
             if (clashConfig) await writeFile('clash-whitelist.yaml', clashConfig);
-            const singConfig = singTemplate
-                ? compileSingConfig(parsedUriArray, singTemplate) : null;
+            const singConfig = singTemplate ?
+                compileSingConfig(parsedUriArray, singTemplate) : null;
             if (singConfig) await writeFile('sing-whitelist.json', singConfig);
         } catch(e: any) {
             console.error(e.message);
