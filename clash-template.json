@@ -2,9 +2,6 @@
   "mode": "rule",
   "log-level": "warning",
   "ipv6": false,
-  "profile": {
-    "store-selected": true
-  },
   "sniffer": {
     "enable": true,
     "sniff": {
@@ -14,11 +11,6 @@
         ]
       },
       "TLS": {
-        "ports": [
-          443
-        ]
-      },
-      "QUIC": {
         "ports": [
           443
         ]
@@ -90,6 +82,7 @@
     }
   },
   "rules": [
+    "AND,((NETWORK,udp),(DST-PORT,443)),REJECT",
     "RULE-SET,geosite-private,DIRECT",
     "RULE-SET,geoip-private,DIRECT",
     "RULE-SET,geosite-cheburnet,DIRECT",
